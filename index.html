@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍅</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Focus3D | Reloj Pomodoro Premium</title>
+    <!-- Dynamic Theme and Layout stylesheets will be loaded by Vite -->
+  </head>
+  <body>
+    <!-- 3D Background floating ambient lights -->
+    <div class="floating-orbs-container">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+    </div>
+
+    <!-- Application Header -->
+    <header>
+      <div class="brand">
+        <svg class="brand-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <h1 id="brand-title">Focus3D</h1>
+      </div>
+      <p class="subtitle">Eleva tu productividad con un enfoque tridimensional</p>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="app-container">
+      
+      <!-- Left Panel: 3D Timer Sphere -->
+      <section class="main-timer-section perspective-container">
+        <div class="tilt-card timer-card">
+          <div class="tilt-card-content">
+            
+            <!-- Mode Switcher -->
+            <div class="mode-switcher">
+              <button class="mode-btn active" id="btn-mode-focus" data-mode="focus">Enfoque</button>
+              <button class="mode-btn" id="btn-mode-short" data-mode="short-break">Descanso Corto</button>
+              <button class="mode-btn" id="btn-mode-long" data-mode="long-break">Descanso Largo</button>
+            </div>
+
+            <!-- 3D Timer Sphere Display -->
+            <div class="sphere-3d-wrapper">
+              <div class="sphere-3d-background"></div>
+              
+              <!-- SVG Progress Circle -->
+              <div class="sphere-3d-ring">
+                <svg viewBox="0 0 280 280">
+                  <circle class="circle-bg" cx="140" cy="140" r="130" />
+                  <circle class="circle-progress" id="progress-circle" cx="140" cy="140" r="130" />
+                </svg>
+              </div>
+
+              <!-- Central Content -->
+              <div class="sphere-3d-content">
+                <div class="badge-3d" id="timer-badge">
+                  <span class="badge-3d-dot"></span>
+                  <span id="timer-badge-text">Focus Session</span>
+                </div>
+                <div class="timer-countdown" id="timer-display">25:00</div>
+              </div>
+            </div>
+
+            <!-- Playback Controls -->
+            <div class="timer-controls">
+              <!-- Play / Pause Button -->
+              <button class="btn-3d btn-3d-accent" id="btn-play-pause" aria-label="Iniciar/Pausar temporizador">
+                <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                <svg id="pause-icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="4" width="4" height="16"/>
+                  <rect x="14" y="4" width="4" height="16"/>
+                </svg>
+                <span id="btn-play-text">Iniciar</span>
+              </button>
+
+              <!-- Skip Button -->
+              <button class="btn-3d" id="btn-skip" aria-label="Omitir fase actual">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="5 4 15 12 5 20 5 4"/>
+                  <line x1="19" y1="5" x2="19" y2="19"/>
+                </svg>
+              </button>
+
+              <!-- Reset Button -->
+              <button class="btn-3d" id="btn-reset" aria-label="Reiniciar temporizador">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                </svg>
+              </button>
+
+              <!-- Settings Button -->
+              <button class="btn-3d" id="btn-open-settings" aria-label="Ajustes del temporizador">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 3D Statistics Panel -->
+        <div class="stats-grid">
+          <div class="stat-card-3d tilt-card">
+            <div class="stat-value" id="stats-pomodoros">0</div>
+            <div class="stat-label">Pomodoros</div>
+          </div>
+          <div class="stat-card-3d tilt-card">
+            <div class="stat-value" id="stats-time">0m</div>
+            <div class="stat-label">Tiempo Focus</div>
+          </div>
+          <div class="stat-card-3d tilt-card">
+            <div class="stat-value" id="stats-tasks">0</div>
+            <div class="stat-label">Tareas Fin</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel: Tasks Integration -->
+      <section class="sidebar-section perspective-container">
+        <div class="tilt-card tasks-container">
+          <div class="tilt-card-content">
+            
+            <div class="section-header">
+              <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="9" y1="6" x2="20" y2="6"/>
+                  <line x1="9" y1="12" x2="20" y2="12"/>
+                  <line x1="9" y1="18" x2="20" y2="18"/>
+                  <line x1="5" y1="6" x2="5.01" y2="6"/>
+                  <line x1="5" y1="12" x2="5.01" y2="12"/>
+                  <line x1="5" y1="18" x2="5.01" y2="18"/>
+                </svg>
+                Tareas Pendientes
+              </h2>
+              <button class="btn-3d" id="btn-sync-tasks" aria-label="Sincronizar tareas" style="padding: 6px 12px; font-size: 0.8rem; gap: 4px;">
+                <svg id="icon-sync" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 4 23 10 17 10"/>
+                  <polyline points="1 20 1 14 7 14"/>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+                <span id="sync-status-text">Sinc.</span>
+              </button>
+            </div>
+
+            <!-- 3D Add Task Form -->
+            <form class="add-task-form" id="add-task-form" action="javascript:void(0)">
+              <div class="input-group">
+                <label for="task-input">¿En qué vas a enfocarte?</label>
+                <input class="input-3d" id="task-input" type="text" placeholder="Ej. Redactar propuesta de diseño..." required />
+              </div>
+              <div class="input-row">
+                <div class="input-group" style="flex: 1;">
+                  <label for="task-est-poms">Estimado (🍅)</label>
+                  <input class="input-3d input-3d-num" id="task-est-poms" type="number" min="1" max="10" value="1" />
+                </div>
+                <button class="btn-3d" type="submit" style="align-self: flex-end; padding: 12px 20px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Añadir
+                </button>
+              </div>
+            </form>
+
+            <!-- Tasks List -->
+            <ul class="tasks-list" id="tasks-list">
+              <!-- Dynamically populated -->
+            </ul>
+
+            <div class="tasks-empty" id="tasks-empty-msg">
+              No tienes tareas pendientes. ¡Añade una para empezar!
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 3D Glass Settings Modal Overlay -->
+    <div class="modal-overlay" id="settings-modal">
+      <div class="tilt-card settings-modal-3d">
+        <div class="tilt-card-content">
+          
+          <div class="modal-header">
+            <h3>Ajustes del Reloj 3D</h3>
+            <button class="btn-close-modal" id="btn-close-settings" aria-label="Cerrar ajustes">&times;</button>
+          </div>
+
+          <form id="settings-form" action="javascript:void(0)">
+            <div class="settings-group-title">Tiempos (en minutos)</div>
+            <div class="settings-row-inputs">
+              <div class="input-group">
+                <label for="setting-focus">Enfoque</label>
+                <input class="input-3d" id="setting-focus" type="number" min="1" max="120" value="25" />
+              </div>
+              <div class="input-group">
+                <label for="setting-short">Corto</label>
+                <input class="input-3d" id="setting-short" type="number" min="1" max="60" value="5" />
+              </div>
+              <div class="input-group">
+                <label for="setting-long">Largo</label>
+                <input class="input-3d" id="setting-long" type="number" min="1" max="60" value="15" />
+              </div>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 20px;">
+              <label for="setting-interval">Frecuencia del Descanso Largo</label>
+              <input class="input-3d" id="setting-interval" type="number" min="1" max="10" value="4" />
+            </div>
+
+            <div class="settings-group-title">Integración (Google Sheets)</div>
+            <div class="input-group" style="margin-bottom: 20px;">
+              <label for="setting-gsheets-url">URL del Web App (Apps Script)</label>
+              <input class="input-3d" id="setting-gsheets-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" />
+            </div>
+
+            <div class="settings-group-title">Sonido y Efectos</div>
+            
+            <div class="settings-switch-row">
+              <div>
+                <label style="font-weight: 600; font-size: 0.9rem;">Efectos de Alarma</label>
+                <div class="switch-label-desc">Sintetizador Web Audio API</div>
+              </div>
+              <label class="switch-3d">
+                <input type="checkbox" id="setting-sound-enabled" checked />
+                <span class="slider-3d"></span>
+              </label>
+            </div>
+
+            <div class="settings-switch-row">
+              <div>
+                <label style="font-weight: 600; font-size: 0.9rem;">Sonido Tictac</label>
+                <div class="switch-label-desc">Activa un tictac suave cada segundo</div>
+              </div>
+              <label class="switch-3d">
+                <input type="checkbox" id="setting-tick-enabled" />
+                <span class="slider-3d"></span>
+              </label>
+            </div>
+
+            <div class="settings-footer">
+              <button class="btn-3d btn-3d-accent" type="submit">Guardar Ajustes</button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Application Footer -->
+    <footer>
+      Desarrollado con ❤️ y TypeScript • <button style="background:none;border:none;color:inherit;cursor:pointer;text-decoration:underline;font:inherit;padding:0;" id="reset-all-data">Reiniciar todos los datos</button>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

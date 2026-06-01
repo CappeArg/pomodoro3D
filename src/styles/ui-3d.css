@@ -1,0 +1,263 @@
+/* 3D Scene setup */
+.perspective-container {
+  perspective: 1200px;
+  width: 100%;
+}
+
+/* Card with 3D Tilt effect */
+.tilt-card {
+  background: var(--bg-panel);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-light);
+  border-radius: 24px;
+  box-shadow: var(--shadow-3d-card);
+  transform-style: preserve-3d;
+  transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.4s ease;
+  position: relative;
+  overflow: visible;
+}
+
+.tilt-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tilt-card:hover::after {
+  opacity: 1;
+}
+
+.tilt-card-content {
+  transform: translateZ(40px); /* Pushes content forward in 3D space */
+  transform-style: preserve-3d;
+  padding: 30px;
+}
+
+/* 3D Tactile Buttons */
+.btn-3d {
+  position: relative;
+  background: linear-gradient(135deg, #1b203a, #101326);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 14px 28px;
+  border-radius: 16px;
+  cursor: pointer;
+  outline: none;
+  transition: var(--transition-bounce);
+  transform-style: preserve-3d;
+  transform: translateZ(20px);
+  box-shadow: 
+    0 8px 0 #080a14,
+    0 15px 20px rgba(0, 0, 0, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-3d:hover {
+  transform: translateZ(25px) translateY(-2px);
+  box-shadow: 
+    0 10px 0 #080a14,
+    0 18px 25px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(135deg, #222849, #131730);
+}
+
+.btn-3d:active {
+  transform: translateZ(10px) translateY(6px);
+  box-shadow: 
+    0 2px 0 #080a14,
+    0 5px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Dynamic Glowing Accent Button (Play/Pause) */
+.btn-3d-accent {
+  background: linear-gradient(135deg, var(--theme-color), rgba(var(--theme-color-rgb), 0.7));
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 8px 0 rgba(0, 0, 0, 0.45),
+    0 8px 20px var(--theme-glow),
+    0 15px 25px rgba(0, 0, 0, 0.3);
+}
+
+.btn-3d-accent:hover {
+  background: linear-gradient(135deg, var(--theme-color), rgba(var(--theme-color-rgb), 0.85));
+  box-shadow: 
+    0 10px 0 rgba(0, 0, 0, 0.45),
+    0 10px 25px var(--theme-glow),
+    0 18px 30px rgba(0, 0, 0, 0.35);
+  transform: translateZ(30px) translateY(-2px);
+}
+
+.btn-3d-accent:active {
+  box-shadow: 
+    0 2px 0 rgba(0, 0, 0, 0.45),
+    0 2px 8px var(--theme-glow),
+    0 5px 10px rgba(0, 0, 0, 0.3);
+  transform: translateZ(12px) translateY(6px);
+}
+
+/* 3D Sphere Display for the Timer */
+.sphere-3d-wrapper {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin: 0 auto 30px auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  transform: translateZ(50px);
+}
+
+.sphere-3d-background {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(28, 34, 64, 0.9) 0%, rgba(10, 12, 22, 0.95) 70%);
+  box-shadow: 
+    inset 0 10px 30px rgba(255, 255, 255, 0.05),
+    inset 0 -15px 40px rgba(0, 0, 0, 0.8),
+    0 20px 50px rgba(0, 0, 0, 0.6),
+    0 0 40px var(--border-glow);
+  z-index: 1;
+  transition: box-shadow 0.4s ease;
+}
+
+.sphere-3d-ring {
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  z-index: 2;
+  pointer-events: none;
+  transform: rotate(-90deg);
+}
+
+.sphere-3d-ring svg {
+  width: 100%;
+  height: 100%;
+}
+
+.sphere-3d-ring circle {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+.sphere-3d-ring .circle-bg {
+  stroke: rgba(255, 255, 255, 0.03);
+}
+
+.sphere-3d-ring .circle-progress {
+  stroke: var(--theme-color);
+  stroke-dasharray: 816.8; /* 2 * PI * r (r=130) */
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.1s linear, stroke 0.4s ease;
+  filter: drop-shadow(0 0 8px var(--theme-color));
+}
+
+.sphere-3d-content {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  transform: translateZ(30px);
+}
+
+/* 3D Glass Indicator for current cycle */
+.badge-3d {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  transition: var(--transition-smooth);
+}
+
+.badge-3d.active {
+  color: var(--theme-color);
+  border-color: rgba(var(--theme-color-rgb), 0.3);
+  box-shadow: 
+    0 4px 12px rgba(var(--theme-color-rgb), 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.badge-3d-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--theme-color);
+  box-shadow: 0 0 8px var(--theme-color);
+  transition: background-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Floating 3D Orbs in the background */
+.floating-orbs-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.15;
+  transition: background-color 0.8s ease;
+}
+
+.orb-1 {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  left: -100px;
+  background-color: var(--theme-color);
+  animation: float-orb 20s infinite alternate ease-in-out;
+}
+
+.orb-2 {
+  width: 500px;
+  height: 500px;
+  bottom: -150px;
+  right: -100px;
+  background-color: #1f264a;
+  animation: float-orb 25s infinite alternate-reverse ease-in-out;
+}
+
+@keyframes float-orb {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(60px, 40px) scale(1.1);
+  }
+  100% {
+    transform: translate(-30px, 80px) scale(0.95);
+  }
+}
