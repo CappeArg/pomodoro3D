@@ -21,7 +21,7 @@ const firebaseConfig = {
   measurementId: 'G-G4FWW02QKW'
 };
 
-const app = initializeApp(firebaseConfig);
+initializeApp(firebaseConfig);
 
 // --- Dom Elements ---
 const timerDisplay = document.getElementById('timer-display') as HTMLDivElement;
