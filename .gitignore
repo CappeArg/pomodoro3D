@@ -10,7 +10,17 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.vite/
+out/
+.firebase/
+firebase-debug.log
+.agents/
+skills-lock.json
 *.local
+
+# Environment files
+.env
+.env.*
 
 # Editor directories and files
 .vscode/*

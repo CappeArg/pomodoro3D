@@ -2,12 +2,28 @@ import './styles/main.css';
 import './styles/ui-3d.css';
 import './styles/layout.css';
 
+import { initializeApp } from 'firebase/app';
+import { getAnalytics } from 'firebase/analytics';
+
 import { timer } from './timer';
 import type { TimerMode } from './timer';
 import { taskManager } from './tasks';
 import type { Task } from './tasks';
 import { synth } from './audio';
 import { tilt } from './tilt';
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyBptuPC9YzmZZAS62XgB1znkr_v8vDJLZs',
+  authDomain: 'pablo-cappellacci.firebaseapp.com',
+  projectId: 'pablo-cappellacci',
+  storageBucket: 'pablo-cappellacci.firebasestorage.app',
+  messagingSenderId: '643859659643',
+  appId: '1:643859659643:web:602df4084211a022da5bde',
+  measurementId: 'G-G4FWW02QKW'
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 // --- Dom Elements ---
 const timerDisplay = document.getElementById('timer-display') as HTMLDivElement;
