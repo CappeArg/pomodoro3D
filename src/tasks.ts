@@ -46,7 +46,7 @@ export class TaskManager {
   }
 
   private getSyncUrl(): string {
-    return localStorage.getItem('pomodoro_gsheets_url') || '';
+    return ((import.meta.env as any).VITE_GSHEETS_URL || '') as string;
   }
 
   private autoSyncTimeout: number | null = null;
@@ -60,7 +60,10 @@ export class TaskManager {
 
   public async forceSync(): Promise<boolean> {
     const url = this.getSyncUrl();
-    if (!url) return false;
+    if (!url) {
+      this.notifySyncStatus(false, 'URL de Google Sheets no configurada');
+      return false;
+    }
 
     this.notifySyncStatus(true);
 

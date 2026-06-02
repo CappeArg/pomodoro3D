@@ -70,7 +70,6 @@ const settingLong = document.getElementById('setting-long') as HTMLInputElement;
 const settingInterval = document.getElementById('setting-interval') as HTMLInputElement;
 const settingSoundEnabled = document.getElementById('setting-sound-enabled') as HTMLInputElement;
 const settingTickEnabled = document.getElementById('setting-tick-enabled') as HTMLInputElement;
-const settingGsheetsUrl = document.getElementById('setting-gsheets-url') as HTMLInputElement;
 
 const btnResetAll = document.getElementById('reset-all-data') as HTMLButtonElement;
 
@@ -132,10 +131,6 @@ function populateSettingsInputs(): void {
   settingTickEnabled.checked = isTickOn;
   synth.setEnabled(isSoundOn);
   synth.setTickEnabled(isTickOn);
-
-  // GSheets URL
-  const gsheetsUrl = localStorage.getItem('pomodoro_gsheets_url') || '';
-  settingGsheetsUrl.value = gsheetsUrl;
 }
 
 // --- Bindings & Listeners ---
@@ -379,10 +374,6 @@ settingsForm.addEventListener('submit', (e) => {
 
   // Save Settings in timer
   timer.updateSettings(focus, short, long, interval);
-  
-  // Update GSheets URL
-  const gsheetsUrl = settingGsheetsUrl.value.trim();
-  localStorage.setItem('pomodoro_gsheets_url', gsheetsUrl);
 
   // Update Audio Synthesizer states
   synth.setEnabled(soundEnabled);
