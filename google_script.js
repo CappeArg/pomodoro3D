@@ -96,3 +96,70 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JAVASCRIPT);
   }
 }
+
+function doPost(e) {
+  try {
+    var body = e.postData && e.postData.contents ? e.postData.contents : '';
+    if (!body) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'No body' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var data = typeof body === 'string' ? JSON.parse(body) : body;
+
+    if (data.action === 'sync') {
+      var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+      // ==========================================
+      // 1. GUARDAR TAREAS
+      // ==========================================
+      var tasksSheet = ss.getSheetByName("Tareas");
+      if (!tasksSheet) {
+        tasksSheet = ss.insertSheet("Tareas");
+        tasksSheet.appendRow(["ID Tarea", "Título", "Estado", "Pomodoros Completados", "Objetivo Pomodoros"]);
+        tasksSheet.getRange("A1:E1").setFontWeight("bold").setBackground("#f3f3f3");
+      }
+
+      var lastRow = tasksSheet.getLastRow();
+      if (lastRow > 1) {
+        tasksSheet.getRange(2, 1, lastRow - 1, 5).clearContent();
+      }
+
+      if (data.tasks && data.tasks.length > 0) {
+        var rows = [];
+        for (var i = 0; i < data.tasks.length; i++) {
+          var t = data.tasks[i];
+          rows.push([
+            t.id,
+            t.title,
+            t.completed ? "✅ Completada" : "⏳ Pendiente",
+            t.completedPomodoros,
+            t.targetPomodoros
+          ]);
+        }
+        tasksSheet.getRange(2, 1, rows.length, 5).setValues(rows);
+      }
+
+      // ==========================================
+      // 2. GUARDAR ESTADÍSTICAS GLOBALES
+      // ==========================================
+      if (data.stats) {
+        var statsSheet = ss.getSheetByName("Estadísticas Totales");
+        if (!statsSheet) {
+          statsSheet = ss.insertSheet("Estadísticas Totales");
+          statsSheet.appendRow(["Última Actualización", "Pomodoros Completados", "Minutos Totales de Focus"]);
+          statsSheet.getRange("A1:C1").setFontWeight("bold").setBackground("#e0f7fa");
+        }
+
+        var now = new Date();
+        statsSheet.getRange("A2:C2").setValues([[now, data.stats.completedPomodoros, data.stats.totalFocusMinutes]]);
+      }
+
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}

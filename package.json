@@ -10,9 +10,9 @@
   },
   "devDependencies": {
     "firebase-tools": "^15.19.0",
+    "terser": "^5.48.0",
     "typescript": "~6.0.2",
-    "vite": "^8.0.12",
-    "vite-plugin-singlefile": "^2.3.3"
+    "vite": "^8.0.12"
   },
   "dependencies": {
     "firebase": "^12.14.0"
