@@ -1,0 +1,11 @@
+{
+  "name": "pomodoro3d-functions",
+  "private": true,
+  "engines": {
+    "node": "18"
+  },
+  "dependencies": {
+    "adventurous-lovelace": "file:..",
+    "firebase-functions": "^4.6.0"
+  }
+}

@@ -46,7 +46,7 @@ export class TaskManager {
   }
 
   private getSyncUrl(): string {
-    return ((import.meta.env as any).VITE_GSHEETS_URL || '') as string;
+    return ((import.meta.env as any).VITE_GSHEETS_URL || '/gsheets-sync') as string;
   }
 
   private autoSyncTimeout: number | null = null;

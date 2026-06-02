@@ -8,6 +8,10 @@
     ],
     "rewrites": [
       {
+        "source": "/gsheets-sync",
+        "function": "gsheetsSync"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
