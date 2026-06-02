@@ -15,12 +15,78 @@
 // 8. Haz clic en "Implementar", autoriza los permisos y copia la URL.
 // 9. Pega la URL en la configuración de Focus3D (Ajustes > Integración).
 
+function getSpreadsheet(data) {
+  if (data && data.spreadsheetUrl) {
+    return SpreadsheetApp.openByUrl(data.spreadsheetUrl);
+  }
+  if (data && data.spreadsheetId) {
+    return SpreadsheetApp.openById(data.spreadsheetId);
+  }
+  return SpreadsheetApp.getActiveSpreadsheet();
+}
+
+function syncToSpreadsheet(data) {
+  var ss = getSpreadsheet(data);
+  if (!ss) {
+    throw new Error('No se pudo obtener la hoja de cálculo. Asegúrate de ejecutar el script desde la Hoja de Cálculo vinculada.');
+  }
+
+  var tasksSheet = ss.getSheetByName('Tareas');
+  if (!tasksSheet) {
+    tasksSheet = ss.insertSheet('Tareas');
+    tasksSheet.appendRow(['ID Tarea', 'Título', 'Estado', 'Pomodoros Completados', 'Objetivo Pomodoros']);
+    tasksSheet.getRange('A1:E1').setFontWeight('bold').setBackground('#f3f3f3');
+  }
+
+  var lastRow = tasksSheet.getLastRow();
+  if (lastRow > 1) {
+    tasksSheet.getRange(2, 1, lastRow - 1, 5).clearContent();
+  }
+
+  var writtenTasks = 0;
+  if (data.tasks && data.tasks.length > 0) {
+    var rows = [];
+    for (var i = 0; i < data.tasks.length; i++) {
+      var t = data.tasks[i];
+      rows.push([
+        t.id,
+        t.title,
+        t.completed ? '✅ Completada' : '⏳ Pendiente',
+        t.completedPomodoros,
+        t.targetPomodoros
+      ]);
+    }
+    tasksSheet.getRange(2, 1, rows.length, 5).setValues(rows);
+    writtenTasks = rows.length;
+  }
+
+  var statsWritten = 0;
+  if (data.stats) {
+    var statsSheet = ss.getSheetByName('Estadísticas Totales');
+    if (!statsSheet) {
+      statsSheet = ss.insertSheet('Estadísticas Totales');
+      statsSheet.appendRow(['Última Actualización', 'Pomodoros Completados', 'Minutos Totales de Focus']);
+      statsSheet.getRange('A1:C1').setFontWeight('bold').setBackground('#e0f7fa');
+    }
+
+    var now = new Date();
+    statsSheet.getRange('A2:C2').setValues([[now, data.stats.completedPomodoros, data.stats.totalFocusMinutes]]);
+    statsWritten = 1;
+  }
+
+  return {
+    status: 'success',
+    message: 'Sincronización completada',
+    tasksWritten: writtenTasks,
+    statsWritten: statsWritten
+  };
+}
+
 function doGet(e) {
   try {
     var callback = e.parameter.callback;
     var encodedData = e.parameter.data;
 
-    // Si no hay datos, es solo un test de conexión
     if (!encodedData) {
       var testResponse = callback
         ? callback + '(' + JSON.stringify({ status: 'success', message: 'Conectado' }) + ')'
@@ -29,65 +95,23 @@ function doGet(e) {
         .setMimeType(callback ? ContentService.MimeType.JAVASCRIPT : ContentService.MimeType.TEXT);
     }
 
-    // Decodificar los datos base64
     var jsonStr = Utilities.newBlob(Utilities.base64Decode(encodedData)).getDataAsString();
     var data = JSON.parse(jsonStr);
 
     if (data.action === 'sync') {
-      var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-      // ==========================================
-      // 1. GUARDAR TAREAS
-      // ==========================================
-      var tasksSheet = ss.getSheetByName("Tareas");
-      if (!tasksSheet) {
-        tasksSheet = ss.insertSheet("Tareas");
-        tasksSheet.appendRow(["ID Tarea", "Título", "Estado", "Pomodoros Completados", "Objetivo Pomodoros"]);
-        tasksSheet.getRange("A1:E1").setFontWeight("bold").setBackground("#f3f3f3");
-      }
-
-      var lastRow = tasksSheet.getLastRow();
-      if (lastRow > 1) {
-        tasksSheet.getRange(2, 1, lastRow - 1, 5).clearContent();
-      }
-
-      if (data.tasks && data.tasks.length > 0) {
-        var rows = [];
-        for (var i = 0; i < data.tasks.length; i++) {
-          var t = data.tasks[i];
-          rows.push([
-            t.id,
-            t.title,
-            t.completed ? "✅ Completada" : "⏳ Pendiente",
-            t.completedPomodoros,
-            t.targetPomodoros
-          ]);
-        }
-        tasksSheet.getRange(2, 1, rows.length, 5).setValues(rows);
-      }
-
-      // ==========================================
-      // 2. GUARDAR ESTADÍSTICAS GLOBALES
-      // ==========================================
-      if (data.stats) {
-        var statsSheet = ss.getSheetByName("Estadísticas Totales");
-        if (!statsSheet) {
-          statsSheet = ss.insertSheet("Estadísticas Totales");
-          statsSheet.appendRow(["Última Actualización", "Pomodoros Completados", "Minutos Totales de Focus"]);
-          statsSheet.getRange("A1:C1").setFontWeight("bold").setBackground("#e0f7fa");
-        }
-
-        var now = new Date();
-        statsSheet.getRange("A2:C2").setValues([[now, data.stats.completedPomodoros, data.stats.totalFocusMinutes]]);
-      }
-
-      // Responder con JSONP
+      var result = syncToSpreadsheet(data);
       var successResponse = callback
-        ? callback + '(' + JSON.stringify({ status: 'success' }) + ')'
-        : JSON.stringify({ status: 'success' });
+        ? callback + '(' + JSON.stringify(result) + ')'
+        : JSON.stringify(result);
       return ContentService.createTextOutput(successResponse)
-        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+        .setMimeType(callback ? ContentService.MimeType.JAVASCRIPT : ContentService.MimeType.JSON);
     }
+
+    var fallbackResponse = callback
+      ? callback + '(' + JSON.stringify({ status: 'error', message: 'Acción desconocida' }) + ')'
+      : JSON.stringify({ status: 'error', message: 'Acción desconocida' });
+    return ContentService.createTextOutput(fallbackResponse)
+      .setMimeType(callback ? ContentService.MimeType.JAVASCRIPT : ContentService.MimeType.JSON);
 
   } catch (error) {
     var errorResponse = (e.parameter.callback || 'callback') +
@@ -106,58 +130,14 @@ function doPost(e) {
     }
 
     var data = typeof body === 'string' ? JSON.parse(body) : body;
-
     if (data.action === 'sync') {
-      var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-      // ==========================================
-      // 1. GUARDAR TAREAS
-      // ==========================================
-      var tasksSheet = ss.getSheetByName("Tareas");
-      if (!tasksSheet) {
-        tasksSheet = ss.insertSheet("Tareas");
-        tasksSheet.appendRow(["ID Tarea", "Título", "Estado", "Pomodoros Completados", "Objetivo Pomodoros"]);
-        tasksSheet.getRange("A1:E1").setFontWeight("bold").setBackground("#f3f3f3");
-      }
-
-      var lastRow = tasksSheet.getLastRow();
-      if (lastRow > 1) {
-        tasksSheet.getRange(2, 1, lastRow - 1, 5).clearContent();
-      }
-
-      if (data.tasks && data.tasks.length > 0) {
-        var rows = [];
-        for (var i = 0; i < data.tasks.length; i++) {
-          var t = data.tasks[i];
-          rows.push([
-            t.id,
-            t.title,
-            t.completed ? "✅ Completada" : "⏳ Pendiente",
-            t.completedPomodoros,
-            t.targetPomodoros
-          ]);
-        }
-        tasksSheet.getRange(2, 1, rows.length, 5).setValues(rows);
-      }
-
-      // ==========================================
-      // 2. GUARDAR ESTADÍSTICAS GLOBALES
-      // ==========================================
-      if (data.stats) {
-        var statsSheet = ss.getSheetByName("Estadísticas Totales");
-        if (!statsSheet) {
-          statsSheet = ss.insertSheet("Estadísticas Totales");
-          statsSheet.appendRow(["Última Actualización", "Pomodoros Completados", "Minutos Totales de Focus"]);
-          statsSheet.getRange("A1:C1").setFontWeight("bold").setBackground("#e0f7fa");
-        }
-
-        var now = new Date();
-        statsSheet.getRange("A2:C2").setValues([[now, data.stats.completedPomodoros, data.stats.totalFocusMinutes]]);
-      }
-
-      return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
+      var result = syncToSpreadsheet(data);
+      return ContentService.createTextOutput(JSON.stringify(result))
         .setMimeType(ContentService.MimeType.JSON);
     }
+
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Acción desconocida' }))
+      .setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: error.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
