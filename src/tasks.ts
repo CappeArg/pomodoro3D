@@ -67,87 +67,49 @@ export class TaskManager {
 
     this.notifySyncStatus(true);
 
-    // Primero intentamos enviar por POST (más fiable y sin límite de URL).
-    try {
-      const payload = JSON.stringify({ action: 'sync', tasks: this.tasks, stats: this.currentStats });
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000);
+    return new Promise((resolve) => {
+      const callbackName = '__pomodoroSyncCb_' + Date.now();
+      const payload = JSON.stringify({
+        action: 'sync',
+        tasks: this.tasks,
+        stats: this.currentStats
+      });
+      const encoded = btoa(unescape(encodeURIComponent(payload)));
 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: payload,
-        mode: 'cors',
-        signal: controller.signal
-      } as any);
-      clearTimeout(timeout);
+      (window as any)[callbackName] = (result: any) => {
+        delete (window as any)[callbackName];
+        const script = document.getElementById(callbackName);
+        if (script) script.remove();
 
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (result && result.status === 'success') {
+          this.notifySyncStatus(false);
+          resolve(true);
+        } else {
+          this.notifySyncStatus(false, result?.message || 'Error en servidor');
+          resolve(false);
+        }
+      };
 
-      // Intentamos parsear JSON de respuesta
-      let json: any = null;
-      try { json = await res.json(); } catch (e) { json = null; }
+      const script = document.createElement('script');
+      script.id = callbackName;
+      script.src = `${url}?callback=${callbackName}&data=${encodeURIComponent(encoded)}`;
+      script.onerror = () => {
+        delete (window as any)[callbackName];
+        script.remove();
+        this.notifySyncStatus(false, 'Error de red');
+        resolve(false);
+      };
+      document.head.appendChild(script);
 
-      if (!json) {
-        // Respuesta no JSON; asumimos éxito si status OK
-        this.notifySyncStatus(false);
-        return true;
-      }
-
-      if (json.status === 'success') {
-        this.notifySyncStatus(false);
-        return true;
-      }
-
-      this.notifySyncStatus(false, json.message || 'Error en servidor');
-      return false;
-    } catch (postErr) {
-      // Si POST falla (CORS, red, etc.), revertimos a JSONP como fallback
-      // Usamos el mismo mecanismo anterior para compatibilidad.
-      return new Promise((resolve) => {
-        const callbackName = '__pomodoroSyncCb_' + Date.now();
-        const payload = JSON.stringify({
-          action: 'sync',
-          tasks: this.tasks,
-          stats: this.currentStats
-        });
-        const encoded = btoa(unescape(encodeURIComponent(payload)));
-
-        (window as any)[callbackName] = (result: any) => {
-          delete (window as any)[callbackName];
-          const script = document.getElementById(callbackName);
-          if (script) script.remove();
-
-          if (result && result.status === 'success') {
-            this.notifySyncStatus(false);
-            resolve(true);
-          } else {
-            this.notifySyncStatus(false, result?.message || 'Error en servidor');
-            resolve(false);
-          }
-        };
-
-        const script = document.createElement('script');
-        script.id = callbackName;
-        script.src = `${url}?callback=${callbackName}&data=${encodeURIComponent(encoded)}`;
-        script.onerror = () => {
+      setTimeout(() => {
+        if ((window as any)[callbackName]) {
           delete (window as any)[callbackName];
           script.remove();
-          this.notifySyncStatus(false, 'Error de red');
+          this.notifySyncStatus(false, 'Timeout');
           resolve(false);
-        };
-        document.head.appendChild(script);
-
-        setTimeout(() => {
-          if ((window as any)[callbackName]) {
-            delete (window as any)[callbackName];
-            script.remove();
-            this.notifySyncStatus(false, 'Timeout');
-            resolve(false);
-          }
-        }, 10000);
-      });
-    }
+        }
+      }, 10000);
+    });
   }
 
   /**
